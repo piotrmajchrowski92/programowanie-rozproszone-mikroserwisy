@@ -35,8 +35,25 @@ Wymagania: Windows, Visual Studio 2022 z komponentem ASP.NET i tworzenie aplikac
 
 1. Sklonuj repozytorium i otwórz `MicroservicesAssignment.sln`.
 2. Przywróć pakiety NuGet i zbuduj rozwiązanie.
-3. W konfiguracji wielu projektów startowych ustaw `Start` dla LogService, AuthService, TicketService, ApiGateway i WebClient. Shared pozostaw jako `None`.
-4. Wybierz profile o nazwach zgodnych z projektami i uruchom rozwiązanie.
+3. W Solution Explorer kliknij prawym przyciskiem rozwiązanie
+   i wybierz Properties → Common Properties → Configure Startup Projects
+   (w niektórych wersjach: Startup Project).
+4. Zaznacz Multiple startup projects i ustaw:
+
+   | Projekt | Action | Debug Target |
+   |---|---|---|
+   | LogService | Start | LogService |
+   | AuthService | Start | AuthService |
+   | TicketService | Start | TicketService |
+   | ApiGateway | Start | ApiGateway |
+   | WebClient | Start | WebClient |
+   | Shared | None | — |
+
+5. Zapisz ustawienia i wybierz utworzony profil na pasku narzędzi.
+6. Naciśnij F5 i poczekaj na uruchomienie aplikacji.
+7. Otwórz http://127.0.0.1:5200.
+
+Build Solution kompiluje kod, ale nie uruchamia aplikacji.
 5. Otwórz `http://127.0.0.1:5200`.
 
 Bazy tworzą się automatycznie w katalogu `Data` każdego mikroserwisu. SQL Server nie jest wymagany.
