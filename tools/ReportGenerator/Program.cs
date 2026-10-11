@@ -74,14 +74,14 @@ try
         </style></head><body><h1>System zgłoszeń w architekturze mikroserwisowej</h1>
         <p>C# / ASP.NET Core 8 / Visual Studio / JWT / SQLite / Razor Pages</p>
         <h2>1. Cel i zakres</h2>
-        <p>Realizacja zadania: trzy mikroserwisy, centralny API Gateway i klient webowy. Każdy użytkownik może rejestrować konto, logować się, wykonywać CRUD swoich zgłoszeń i przeglądać własne logi.</p>
+        <p>System składa się z trzech mikroserwisów, centralnego API Gateway i klienta webowego. Użytkownik może utworzyć konto, zalogować się, zarządzać swoimi zgłoszeniami i przeglądać historię działań.</p>
         <h2>2. Architektura</h2>
         <pre>Przeglądarka → WebClient :5200 → ApiGateway :5100
                                       ├→ AuthService :5101 → auth.db
                                       ├→ TicketService :5102 → tickets.db
                                       └→ LogService :5103 → logs.db
         AuthService/TicketService → Gateway /internal/logs → LogService</pre>
-        <p>Shared jest biblioteką kontraktów i wspólnej infrastruktury, a nie dodatkowym mikroserwisem. Serwisy nie odczytują baz pozostałych serwisów.</p>
+        <p>Shared jest biblioteką kontraktów i wspólnej infrastruktury. Serwisy nie odczytują baz pozostałych serwisów.</p>
         <h2>3. Składniki</h2>
         <table><tr><th>Projekt</th><th>Odpowiedzialność</th></tr>
         <tr><td>AuthService</td><td>Rejestracja, logowanie, skróty haseł PasswordHasher, wydawanie i weryfikacja JWT.</td></tr>
@@ -109,13 +109,13 @@ try
         <ul><li>Hasła nie są przechowywane jawnie. JWT zawiera sub, email, jti oraz czas ważności.</li>
         <li>Gateway i mikroserwisy niezależnie sprawdzają podpis, wystawcę, odbiorcę i ważność JWT. Właściciel zgłoszeń pochodzi z sub.</li>
         <li>SQL używa parametrów. Razor koduje wyświetlany tekst. Formularze Razor Pages mają ochronę anty-CSRF.</li>
-        <li>Klucze w appsettings.json są wyłącznie demonstracyjne. HTTP i nasłuch na loopback służą testom lokalnym.</li>
+        <li>Klucze w appsettings.json są demonstracyjne. HTTP i nasłuch na loopback służą testom lokalnym.</li>
         <li>Zapisy logów są best-effort; awaria LogService nie cofa CRUD. Nie ma outbox, refresh tokenów, blacklisty JWT ani ról administratora.</li></ul>
         <h2>7. Weryfikacja</h2>
-        <p>scripts/Smoke-Test.ps1 sprawdza API, pełny CRUD, błędne hasło, duplikat e-mail, brak lub uszkodzenie JWT, walidację, izolację danych i komplet logów. Wynik tego skryptu należy oceniać niezależnie od automatycznej demonstracji UI.</p>
-        <p class="note">Poniższe obrazy zostały wykonane automatycznie z rzeczywiście uruchomionej aplikacji. Ten dokument powstaje dopiero po przejściu scenariusza demonstracyjnego UI.</p>
+        <p>Skrypt scripts/Smoke-Test.ps1 sprawdza API, pełny CRUD, błędne hasło, duplikat e-mail, brak lub uszkodzenie JWT, walidację, izolację danych i komplet logów. Demonstracja interfejsu jest oddzielnym scenariuszem weryfikacji.</p>
+        <p>Zrzuty ekranu przedstawiają kolejne etapy scenariusza: rejestrację, logowanie, operacje na zgłoszeniu, weryfikację JWT i wylogowanie.</p>
         """);
-    html.Append("<p>Raport wygenerowano: ").Append(WebUtility.HtmlEncode(DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss zzz"))).Append("</p>");
+    html.Append("<p>Data raportu: ").Append(WebUtility.HtmlEncode(DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss zzz"))).Append("</p>");
     html.Append("<p>Konto demonstracyjne: ").Append(WebUtility.HtmlEncode(email)).Append("</p>");
     for (var i = 0; i < captured.Count; i++)
     {
@@ -135,9 +135,9 @@ try
         PreferCSSPageSize = true });
     if (!File.Exists(pdfPath) || new FileInfo(pdfPath).Length == 0)
         throw new InvalidOperationException("Nie zapisano raportu PDF.");
-    Console.WriteLine($"Gotowy raport: {pdfPath}");
-    Console.WriteLine($"Rzeczywiste zrzuty: {screenshotsDir}");
-    Console.WriteLine($"Konto demonstracyjne pozostaje w bazie: {email}");
+    Console.WriteLine($"Raport: {pdfPath}");
+    Console.WriteLine($"Zrzuty ekranu: {screenshotsDir}");
+    Console.WriteLine($"Konto demonstracyjne: {email}");
 }
 catch (Exception ex)
 {
