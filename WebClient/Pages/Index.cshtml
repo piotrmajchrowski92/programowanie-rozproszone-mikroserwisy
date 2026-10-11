@@ -1,0 +1,109 @@
+@page
+@model IndexModel
+@{ ViewData["Title"] = "Panel"; }
+<h1>Panel zgłoszeń</h1>
+<p class="muted">Rejestracja, logowanie, autoryzowany CRUD i dziennik zdarzeń w jednym miejscu.</p>
+@if (!string.IsNullOrWhiteSpace(Model.Message))
+{
+    <div class="notice success" role="status">@Model.Message</div>
+}
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="notice error" role="alert">@Model.ErrorMessage</div>
+}
+@if (!Model.IsLoggedIn)
+{
+    <div class="grid">
+        <section class="card">
+            <h2>Rejestracja</h2>
+            <form method="post" asp-page-handler="Register">
+                <label for="registerEmail">E-mail</label>
+                <input id="registerEmail" name="Email" type="email" maxlength="254" required autocomplete="email" />
+                <label for="registerPassword">Hasło (8–128 znaków)</label>
+                <input id="registerPassword" name="Password" type="password" minlength="8" maxlength="128" required autocomplete="new-password" />
+                <button type="submit">Utwórz konto</button>
+            </form>
+        </section>
+        <section class="card">
+            <h2>Logowanie</h2>
+            <form method="post" asp-page-handler="Login">
+                <label for="loginEmail">E-mail</label>
+                <input id="loginEmail" name="Email" type="email" maxlength="254" required autocomplete="username" />
+                <label for="loginPassword">Hasło</label>
+                <input id="loginPassword" name="Password" type="password" minlength="8" maxlength="128" required autocomplete="current-password" />
+                <button type="submit">Zaloguj się</button>
+            </form>
+        </section>
+    </div>
+}
+else
+{
+    <section class="card session">
+        <div><h2>Sesja użytkownika</h2><p>@Model.CurrentEmail</p>
+            <p class="muted">Ważność JWT: @Model.Expires. Token przechowywany po stronie serwera klienta.</p></div>
+        <div class="actions">
+            <form method="post" asp-page-handler="Validate"><button class="secondary">Sprawdź JWT</button></form>
+            <form method="post" asp-page-handler="Logout"><button class="secondary">Wyloguj</button></form>
+        </div>
+    </section>
+    <section class="card">
+        <h2>@(Model.TicketId == 0 ? "Dodaj zgłoszenie" : $"Edytuj zgłoszenie #{Model.TicketId}")</h2>
+        <form method="post" asp-page-handler="Save">
+            <input type="hidden" asp-for="TicketId" />
+            <label asp-for="Input.Title">Tytuł</label>
+            <input asp-for="Input.Title" minlength="3" maxlength="100" required />
+            <label asp-for="Input.Description">Opis</label>
+            <textarea asp-for="Input.Description" maxlength="2000" rows="3"></textarea>
+            <label asp-for="Input.Status">Status</label>
+            <select asp-for="Input.Status">
+                <option value="Nowe">Nowe</option><option value="W toku">W toku</option>
+                <option value="Zamknięte">Zamknięte</option>
+            </select>
+            <div class="actions"><button type="submit">@(Model.TicketId == 0 ? "Dodaj" : "Zapisz zmiany")</button>
+                @if (Model.TicketId != 0) { <a asp-page="Index" class="button secondary">Anuluj edycję</a> }
+            </div>
+        </form>
+    </section>
+    <section class="card">
+        <div class="section-heading"><h2>Moje zgłoszenia (@Model.Tickets.Count)</h2>
+            <a asp-page="Index" class="button secondary">Odśwież dane</a></div>
+        @if (Model.Tickets.Count == 0) { <p class="muted">Brak zgłoszeń. Dodaj pierwszy rekord.</p> }
+        else
+        {
+            <div class="table-scroll"><table>
+                <thead><tr><th>ID</th><th>Tytuł i opis</th><th>Status</th><th>Akcje</th></tr></thead>
+                <tbody>
+                @foreach (var ticket in Model.Tickets)
+                {
+                    <tr><td>@ticket.Id</td><td><span class="ticket-title">@ticket.Title</span>
+                        <div class="description">@ticket.Description</div></td>
+                        <td><span class="badge">@ticket.Status</span></td>
+                        <td><div class="actions">
+                            <a asp-page="Index" asp-route-edit="@ticket.Id" class="button secondary">Edytuj</a>
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@ticket.Id">
+                                <button type="submit" class="danger">Usuń</button>
+                            </form></div></td></tr>
+                }
+                </tbody>
+            </table></div>
+        }
+    </section>
+    <section class="card">
+        <h2>Dziennik zdarzeń</h2>
+        <p class="muted">Do 100 ostatnich zdarzeń aktualnego użytkownika. Czas zapisany w UTC.</p>
+        @if (Model.Logs.Count == 0) { <p>Brak logów do wyświetlenia.</p> }
+        else
+        {
+            <div class="table-scroll"><table>
+                <thead><tr><th>ID</th><th>Czas UTC</th><th>Serwis</th><th>Akcja</th><th>Szczegóły</th></tr></thead>
+                <tbody>
+                @foreach (var log in Model.Logs)
+                {
+                    <tr><td>@log.Id</td><td class="nowrap">@log.TimestampUtc</td><td>@log.Service</td>
+                        <td><span class="badge">@log.Action</span></td><td>@log.Details</td></tr>
+                }
+                </tbody>
+            </table></div>
+        }
+    </section>
+}
